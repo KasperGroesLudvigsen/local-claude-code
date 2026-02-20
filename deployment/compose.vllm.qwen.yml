@@ -1,0 +1,22 @@
+# docker compose -f compose.vllm.qwen.yml up 
+
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ipc: host
+    command: >
+      --served-model-name my-model
+      --model Qwen/Qwen3-Coder-30B-A3B-Instruct
+      --enable-auto-tool-choice
+      --tool-call-parser hermes
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

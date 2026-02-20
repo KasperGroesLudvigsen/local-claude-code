@@ -1,0 +1,13 @@
+# some dude made a docker image that supposedly can run on DGX Spark 
+# https://forums.developer.nvidia.com/t/request-glm-4-7-flash-awq-nvfp4-instructions/358495
+# https://forums.developer.nvidia.com/t/new-pre-built-vllm-docker-images-for-nvidia-dgx-spark/357832/9
+# NB! Some lines were removed from the original to reduce complexity
+docker run -d --privileged --gpus all --rm --ipc=host --network host --name my-model \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  scitrera/dgx-spark-vllm:0.14.0-t5 \
+  vllm serve Qwen/Qwen3-Coder-30B-A3B-Instruct \
+  --gpu-memory-utilization 0.85 \
+  --tool-call-parser hermes \
+  --enable-auto-tool-choice \
+  --served-model-name my-model \
+  --max-model-len 100001
