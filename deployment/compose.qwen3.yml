@@ -1,0 +1,24 @@
+services:
+  qwen3-coder:
+    image: scitrera/dgx-spark-vllm:0.14.0-t5
+    container_name: qwen3-coder
+    privileged: true
+    ipc: host
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      vllm serve Qwen/Qwen3-Coder-30B-A3B-Instruct
+      --gpu-memory-utilization 0.85
+      --tool-call-parser qwen3_coder
+      --enable-auto-tool-choice
+      --served-model-name qwen3-coder
+      --max-model-len 256000

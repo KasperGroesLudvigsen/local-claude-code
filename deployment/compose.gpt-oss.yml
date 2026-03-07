@@ -1,0 +1,25 @@
+services:
+  open-ai-gpt-oss:
+    image: scitrera/dgx-spark-vllm:0.14.0-t5
+    container_name: open-ai-gpt-oss
+    privileged: true
+    ipc: host
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      vllm serve openai/gpt-oss-120b
+      --gpu-memory-utilization 0.85
+      --tool-call-parser openai
+      --enable-auto-tool-choice
+      --served-model-name open-ai-gpt-oss
+      --max-model-len 128000
+      --async-scheduling

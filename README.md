@@ -1,4 +1,3 @@
-
 # BLog post: Building a transcription endpoint with Claude Code running a local LLM
 
 
@@ -59,6 +58,11 @@ docker run -d --privileged --gpus all --rm --ipc=host --network host --name my-m
   --served-model-name my-model \
   --max-model-len 100001
 ```
+or
+```bash
+docker compose -f deployment/compose.gpt-oss.yml up
+```
+
 ### Set up Open WebUI (OPTIONAL)
 Run OpenWebUI to have a chat interface in addition to Claude Code:
 ```bash
