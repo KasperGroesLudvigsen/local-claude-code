@@ -11,3 +11,7 @@ docker run -d --privileged --gpus all --rm --ipc=host --network host --name my-m
   --enable-auto-tool-choice \
   --served-model-name my-model \
   --max-model-len 100001
+
+
+
+(EngineCore_DP0 pid=100) WARNING 03-02 08:35:56 [fused_moe.py:1089] Using default MoE config. Performance might be sub-optimal! Config file not found at /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/configs/E=128,N=768,device_name=NVIDIA_GB10.json

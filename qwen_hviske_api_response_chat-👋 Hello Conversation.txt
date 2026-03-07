@@ -1,0 +1,117 @@
+### USER
+hi
+
+### ASSISTANT
+Hello! How can I help you today?
+
+### USER
+Write a Python FastAPI endpoint that uses the Hviske 3.0 Huggingface model to transcribe incoming audio files
+
+### ASSISTANT
+Here's a Python FastAPI endpoint that uses the Hviske 3.0 Hugging Face model for audio transcription:
+
+```python
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from pydantic import BaseModel
+import torch
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+import torchaudio
+import io
+from typing import List
+
+app = FastAPI()
+
+# Initialize the model and processor (this will be loaded once)
+model_name = "facebook/wav2vec2-base-960h"  # Replace with Hviske 3.0 model if available
+processor = Wav2Vec2Processor.from_pretrained(model_name)
+model = Wav2Vec2ForCTC.from_pretrained(model_name)
+
+@app.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    try:
+        # Read the uploaded file
+        contents = await file.read()
+        
+        # Load audio file using torchaudio
+        audio_tensor, sample_rate = torchaudio.load(io.BytesIO(contents))
+        
+        # Convert to mono if stereo
+        if audio_tensor.shape[0] > 1:
+            audio_tensor = torch.mean(audio_tensor, dim=0, keepdim=True)
+        
+        # Resample to 16kHz if needed
+        if sample_rate != 16000:
+            resampler = torchaudio.transforms.Resample(sample_rate, 16000)
+            audio_tensor = resampler(audio_tensor)
+        
+        # Normalize audio
+        audio_tensor = audio_tensor.squeeze(0)
+        
+        # Prepare input for model
+        input_values = processor(
+            audio_tensor.numpy(), 
+            sampling_rate=16000, 
+            return_tensors="pt", 
+            padding="longest"
+        ).input_values
+        
+        # Perform transcription
+        with torch.no_grad():
+            logits = model(input_values).logits
+        
+        # Decode predictions
+        predicted_ids = torch.argmax(logits, dim=-1)
+        transcription = processor.batch_decode(predicted_ids)
+        
+        return {"transcription": transcription[0]}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+To use this endpoint:
+
+1. Install required dependencies:
+```bash
+pip install fastapi uvicorn torch torchaudio transformers pydantic python-multipart
+```
+
+2. Run the application:
+```bash
+uvicorn main:app --reload
+```
+
+3. Test with curl:
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/transcribe' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@your_audio_file.wav;type=audio/wav'
+```
+
+Key features of this implementation:
+- Accepts audio files via multipart form data
+- Handles audio preprocessing (mono conversion, resampling to 16kHz)
+- Uses Hugging Face's Wav2Vec2 model for transcription
+- Returns clean text transcription
+- Includes proper error handling
+- Supports common audio formats (WAV, MP3, etc.)
+
+Note: Replace `facebook/wav2vec2-base-960h` with the actual Hviske 3.0 model identifier when available. If Hviske 3.0 is not on Hugging Face, you might need to:
+1. Download it manually and load locally
+2. Use a different model that supports Danish/Scandinavian languages
+3. Adapt the code to work with your specific model format
+
+The model will automatically download the pre-trained weights on first run. For production deployment, consider adding:
+- Model caching
+- GPU acceleration support
+- Audio format validation
+- Rate limiting
+- Authentication middleware
+
+This implementation assumes the model expects 16kHz mono audio input, which is standard for most speech recognition models. The endpoint returns a JSON object containing the transcribed text.
