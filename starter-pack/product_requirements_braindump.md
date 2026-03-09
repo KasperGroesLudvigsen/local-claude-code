@@ -16,7 +16,6 @@ model (speech to text).
 - MUST use `syvai/hviske-v3-conversation` via HuggingFace Transformers.
 - The `/transcribe` endpoint must receive an audio file and return:
   1. A full text transcription
-  2. Timestamped transcription segments (word or segment level)
 - The service is primarily intended for transcription of Danish speech. 
   Force `language="da"` — do not implement language auto-detection.
 - Allow both long and large audio files. Set liberal file size and duration 

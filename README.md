@@ -27,6 +27,14 @@ refactor test_api.py so that the audio file path is not hardcoded but provided a
 
 ## Learnings
 
+It pretty slow when running claude code and chatting at the same time, suggesting that for this type of work, a Spark shouldn't be shared. That means that for teams above a certain size, instead of buying 1 per team member, you should consider buying a server with a few beefy GPU cards. 
+
+### GPT-OSS
+Here, I turned off my wifi. THe LLM got utterly confused when its model import wasn't working. Pure thing. Maybe I should have told it that it wouldn't have internet access. This points to an interesting observation: When coding in offlien environments with tools like this, we need to be explicit about there being no internet access, and potentially show the LLM how to load models from file in our preferred way.  
+
+Time to plan and implement:
+ Brewed for 44m 26s
+
 ### Using Qwen/Qwen3-Coder-30B-A3B-Instruct
 
 It was done after N turns (one of them being I wanted to change the port from 8000 that VLLM was already using. I could have specified this but it could also have checked itself or asked)
@@ -85,9 +93,9 @@ Open a terminal, navigate to the project you want to work on. Then, run:
 ANTHROPIC_BASE_URL=http://localhost:8000 \
 ANTHROPIC_API_KEY=dummy \
 ANTHROPIC_AUTH_TOKEN=dummy \
-ANTHROPIC_DEFAULT_OPUS_MODEL=my-model \
-ANTHROPIC_DEFAULT_SONNET_MODEL=my-model \
-ANTHROPIC_DEFAULT_HAIKU_MODEL=my-model \
+ANTHROPIC_DEFAULT_OPUS_MODEL=open-ai-gpt-oss \
+ANTHROPIC_DEFAULT_SONNET_MODEL=open-ai-gpt-oss \
+ANTHROPIC_DEFAULT_HAIKU_MODEL=open-ai-gpt-oss \
 claude
 ```
 
